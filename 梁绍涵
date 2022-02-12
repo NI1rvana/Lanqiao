@@ -1,0 +1,309 @@
+# 第十二届蓝桥杯
+
+## T1
+
+直接暴力枚举每个数的每一位即可，利用数组存下每个数字剩余几张。
+
+```c++
+#include<bits/stdc++.h>
+using namespace std;
+int main()
+{
+	int a[10];
+	int n,ans;
+	for(int i=0;i<=9;i++)
+	{
+		a[i]=2021;
+	}
+	int flag=0;
+	for(int i=0;;i++)
+	{	
+		n=i;
+		if(n==0)
+		a[n]--;
+		while(n!=0)
+		{
+			int x;
+			x=n%10;
+			a[x]--;
+			if(a[x]<0)
+			{
+				ans=i;
+				flag=1;
+				break;
+			}
+			n/=10;
+		}
+		if(flag==1)
+		break;
+	}
+	cout<<ans-1;
+}
+```
+
+## T2
+
+两点确定一条直线，枚举所有的直线，算出k和b。
+
+利用set储存，可以直接去重
+
+```c++
+#include<bits/stdc++.h>
+using namespace std;
+typedef pair<double,double> P;
+map<P,int> a;
+int num=0;
+int main()
+{
+	int f=0;
+	for(int i=0;i<=19;i++)
+	for(int j=0;j<=20;j++)
+	for(int k=0;k<=19;k++)
+	for(int l=0;l<=20;l++)
+	{
+		if(i==k&&j==l)
+		continue;
+		double k1,b1;
+		if(i==k) continue;
+		k1=1.0*(l-j)/(k-i);
+		b1=(j*k-l*i)*1.0/(k-i);
+//		cout<<k1<<" "<<b1<<endl;;
+		P x;
+		x.first=k1;
+		x.second=b1;
+		if(a[x]!=1)
+		{
+			a[x]=1;
+			num++;
+		}
+	}
+	cout<<num+20;
+}
+```
+
+## T3
+
+求出所有的因数然后暴力枚举，当其因数之积为n时，ans++
+
+```c++
+#include<iostream>
+#include<cstring>
+#include<cstdio>
+#include<algorithm>
+#include<cmath>
+using namespace std;
+typedef unsigned long long LL;
+int main(){
+    LL n=2021041820210418;
+    LL cnt=0;
+    for(LL i=1;i*i*i<=n;i++){
+        for(LL j=i;i*j*j<=n;j++){
+            LL k=n/i/j;
+            if(i*j*k==n){
+                if(i==j&&j==k)
+                    cnt+=1;
+                else if(i==j||i==k||k==j)
+                    cnt+=3;
+                else
+                    cnt+=6;
+            }
+        }
+    }
+    cout<<cnt<<endl;
+    return 0;
+}
+```
+
+## T4
+
+dij模板就能过，虽然有一点麻烦（
+
+ps：两数之积为最小公倍数和最大公约数之和
+
+```c++
+#include<bits/stdc++.h>
+using namespace std;
+int m[2050][2050];
+const int inf=0x3f3f3f3f;
+int dis[2050],vis[2050];
+priority_queue<int,vector<int>,greater<int> >q;
+int get(int x,int y)
+{
+	int c;
+	c=y%x;
+	while(c!=0)
+	{
+		y=x;
+		x=c;
+		c=y%x;
+	}
+	return x;
+}
+void dij()
+{
+	int min1,minp;
+	for(int i=1;i<=2021;i++)
+	{
+		dis[i]=m[1][i];
+	}
+	vis[1]=1;
+	for(int i=1;i<=2021;i++)
+	{              
+	        min1=inf;
+	        for(int j=1;j<=2021;j++)
+			{              
+	            if(min1>dis[j]&&!vis[j])
+				{
+	                min1=dis[j];                  
+	                minp=j;                      
+	            } 
+	        }
+	        vis[minp]=1;                     
+	        for(int v=1;v<=2021;v++)
+			{          
+	            if(m[minp][v]!=inf)
+				{          
+	                if(dis[v]>dis[minp]+m[minp][v]){   
+	                    dis[v]=dis[minp]+m[minp][v];   
+	                }
+	            }
+	        }
+	}
+}
+int main()
+{
+	for(int i=1;i<=2021;i++)
+	{
+		for(int j=1;j<=2021;j++)
+		{
+			if(abs(j-i)<=21&&j!=i)
+			{
+				int mol,b;
+				mol=get(i,j);
+				b=i*j/mol;
+				m[i][j]=m[j][i]=b;
+			}
+			else
+			{
+				m[i][j]=m[j][i]=inf;
+			}
+		}
+	}
+
+	dij();
+	cout<<dis[2021];
+}
+```
+
+## T5
+
+状压dp
+
+但是我不会
+
+摆了
+
+## T6
+
+又是dp
+
+dp(i,j) 表示前 i ii 个数字选择若干个加或者减，能否获得和为 j 
+
+```c++
+#include <bits/stdc++.h>
+using namespace std;
+
+const int offset = 100052;
+const int maxn = 100052 + offset;
+int n, vis[2][maxn], a[2000];
+
+int main() {
+  scanf("%d", &n);
+  for (int i = 0; i < n; i++) {
+    scanf("%d", &a[i]);
+  }
+
+  memset(vis, 0, sizeof(vis));
+  vis[0][offset] = 1;
+  int pre = 0, cur = 1;
+
+  for (int i = 0; i < n; i++) {
+    for (int j = 0; j < maxn; j++) {
+      vis[cur][j] = max(vis[cur][j], vis[pre][j]);
+      if (j - a[i] >= 0) {
+        vis[cur][j] = max(vis[pre][j - a[i]], vis[cur][j]);
+      }
+      if (j + a[i] < maxn) {
+        vis[cur][j] = max(vis[pre][j + a[i]], vis[cur][j]);
+      }
+    }
+    swap(pre, cur);
+  }
+
+  int ans = 0;
+  for (int i = offset + 1; i < maxn; i++) {
+    if (vis[pre][i]) {
+      ans++;
+    }
+  }
+  printf("%d", ans);
+  return 0;
+}
+
+```
+
+## T7
+
+二进制
+
+不会
+
+接着摆
+
+## T8
+
+```c++
+#include <bits/stdc++.h>
+using namespace std;
+
+const int maxn = 100052;
+int fa[maxn], n;
+vector<int> u[maxn];
+
+int dfs(int x) {
+  int ret = 1;
+
+  for (int i = 0; i < u[x].size(); i++) {
+    int temp = 1 + dfs(u[x][i]) + u[x].size() - 1;
+    ret = max(temp, ret);
+  }
+  return ret;
+}
+
+int main() {
+  scanf("%d", &n);
+  for (int i = 0; i < n - 1; i++) {
+    scanf("%d", &fa[i]);
+    u[fa[i]].push_back(i + 2);
+  }
+
+  printf("%d\n", dfs(1) - 1);
+  return 0;
+}
+```
+
+dp(x) 表示以x为根的子树转化成的二叉树最大高度
+
+dp (x)=max{ dp(u)+size(x)∣u是i的儿子} ， size ( x ) size(x)size(x) 表示x的儿子个数。
+
+## T9.10
+
+这一届为什么全是动态规划
+
+可以看一下题解
+
+[(46条消息) 2021年第十二届蓝桥杯省赛A组题解（C/C++）_薛崇祥的博客-CSDN博客_蓝桥杯2021省赛a组](https://blog.csdn.net/qq_36306833/article/details/121872050?spm=1001.2014.3001.5501)
+
+[(46条消息) 【蓝桥杯】什么算法才是版本答案？近三年（2019-2021）蓝桥杯省赛涉及算法出现频率分析_薛崇祥的博客-CSDN博客_蓝桥杯涉及的算法](https://blog.csdn.net/qq_36306833/article/details/122313523?spm=1001.2014.3001.5501)
+
+突然发现这个人还是我高中集训时候的老师
